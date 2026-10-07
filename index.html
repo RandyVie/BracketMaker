@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bracket Maker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Rubik:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#09090c;--line:#e9e9f0;--accent:#00d68f;--gold:#ffc83d;--panel:#15151c;--border:#2a2a36;--muted:#9a9aab}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:#fff;font-family:Rubik,system-ui,sans-serif;overflow:hidden}
+button,input{font:inherit}
+
+/* ---------- stage (fixed 1920x1080, scaled to fit) ---------- */
+#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0}
+#title{position:absolute;top:22px;left:0;width:1920px;white-space:nowrap;padding:0 30px;box-sizing:border-box;margin:0;text-align:center;font-family:'Luckiest Guy',cursive;font-weight:400;font-size:80px;letter-spacing:4px;text-shadow:0 5px 0 #000,0 0 40px rgba(255,255,255,.15)}
+#lines{position:absolute;inset:0}
+#lines path{fill:none;stroke:var(--line);stroke-width:4;stroke-linecap:square}
+#lines path.gold{stroke:var(--gold);stroke-width:7}
+.slot{position:absolute;transform:translate(-50%,calc(-100% - 6px))}
+.slot .pic{width:100%;height:100%;display:flex;align-items:flex-end;justify-content:center}
+.slot .pic img{width:100%;height:100%;object-fit:contain;object-position:bottom;filter:drop-shadow(0 4px 10px rgba(0,0,0,.7))}
+.slot .q{width:86%;height:86%;margin-bottom:4%;border-radius:14%;background:linear-gradient(145deg,#2c2150,#110c20);border:3px solid #7d6bd6;display:grid;place-items:center;font-family:'Luckiest Guy',cursive;color:#c8bbff;box-shadow:inset 0 0 24px rgba(0,0,0,.7)}
+.slot .trophy{font-size:var(--fs);opacity:.25;line-height:1}
+.slot .cap{position:absolute;top:calc(100% + 14px);left:50%;transform:translateX(-50%);white-space:nowrap;font-weight:800;text-shadow:0 2px 4px #000;pointer-events:none}
+.slot.champ .cap{color:var(--gold);font-family:'Luckiest Guy',cursive;font-weight:400;letter-spacing:2px}
+.slot.lost .pic{filter:grayscale(1) brightness(.45);opacity:.6}
+.slot.active .pic>*{animation:pulse 1.1s ease-in-out infinite}
+.slot.active .pic img{filter:drop-shadow(0 0 16px var(--accent))}
+.slot.won .pic img{filter:drop-shadow(0 0 20px var(--gold))}
+.slot.champ.filled .pic img{filter:drop-shadow(0 0 30px var(--gold))}
+.slot.clickable{cursor:pointer}
+.slot.clickable .q:hover{border-color:#fff;color:#fff}
+.slot.pop .pic{animation:pop .6s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pulse{50%{transform:scale(1.07)}}
+@keyframes pop{0%{transform:scale(.2) rotate(-12deg);opacity:0}100%{transform:none;opacity:1}}
+
+/* ---------- poll ---------- */
+#poll{position:absolute;width:960px;background:rgba(38,38,46,.94);border-radius:16px;padding:16px 22px 18px;box-shadow:0 10px 40px rgba(0,0,0,.6);cursor:grab;user-select:none}
+#poll.dragging{cursor:grabbing}
+.poll-head{display:flex;justify-content:space-between;align-items:baseline;gap:20px;font-size:28px;font-weight:800}
+#pollHint{color:#d6d6e0;font-weight:600;font-size:24px}
+.opt{position:relative;height:72px;margin-top:12px;background:rgba(255,255,255,.1);border-radius:10px;overflow:hidden;display:flex;align-items:center;gap:16px;padding:0 18px;font-size:28px;font-weight:800}
+.opt .fill{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--accent);transition:width .5s}
+.opt>*:not(.fill){position:relative}
+.opt img{width:56px;height:56px;object-fit:contain}
+.opt .num{background:rgba(0,0,0,.55);border-radius:8px;padding:2px 14px}
+.opt .nm{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 2px 3px rgba(0,0,0,.5)}
+.opt .pct{text-shadow:0 2px 3px rgba(0,0,0,.5)}
+.opt.win{box-shadow:inset 0 0 0 4px var(--gold)}
+.opt.lose{opacity:.45}
+.timer{height:8px;background:rgba(255,255,255,.15);border-radius:4px;overflow:hidden;margin-top:14px}
+#timerFill{display:block;height:100%;width:100%;background:#fff;transition:width .2s linear}
+/* ---------- side panel: camera + VS ---------- */
+#side{position:absolute;left:1400px;top:0;width:520px;height:1080px;border-left:3px solid #2c2c3a}
+#cam{position:absolute;left:14px;top:14px;width:492px;height:277px;border:2px solid #2c2c3a;border-radius:6px;display:grid;place-items:center;color:#2c2c3a;font-weight:800;letter-spacing:.2em}
+body.display #cam span{visibility:hidden}
+#vs{position:absolute;left:0;right:0;top:305px;bottom:16px;display:flex;flex-direction:column;align-items:center;padding:0 20px}
+.vs-card{flex:1;min-height:0;width:100%;display:flex;flex-direction:column;align-items:center}
+.vs-img{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center}
+.vs-img img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 6px 16px rgba(0,0,0,.8))}
+.vs-img .q{height:85%;aspect-ratio:1;border-radius:14%;background:linear-gradient(145deg,#2c2150,#110c20);border:4px solid #7d6bd6;display:grid;place-items:center;font-family:'Luckiest Guy',cursive;font-size:150px;color:#c8bbff}
+.vs-name{font-size:32px;font-weight:800;text-shadow:0 3px 4px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;min-height:42px}
+.vs-pct{position:absolute;font-size:30px;font-weight:800;background:var(--accent);color:#000;border-radius:10px;padding:2px 12px;margin-top:6px}
+.vs-card{position:relative}
+.vs-card .vs-pct{bottom:52px;right:24px}
+#vsText{font-family:'Luckiest Guy',cursive;font-size:120px;line-height:1;color:var(--gold);-webkit-text-stroke:5px #000;paint-order:stroke fill;text-shadow:0 7px 0 #000;transform:rotate(-6deg);margin:4px 0}
+#vs.champ #vsText{font-size:72px}
+.vs-card.lose .vs-img{filter:grayscale(1) brightness(.4)}
+.vs-card.win .vs-img img{filter:drop-shadow(0 0 30px var(--gold))}
+.vs-card.pop .vs-img{animation:pop .6s cubic-bezier(.3,1.6,.5,1)}
+body.no-side #side{display:none}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#000c;border:1px solid #444;padding:10px 16px;border-radius:10px;z-index:20;transition:opacity .4s;pointer-events:none}
+body.idle #gear{opacity:0!important;pointer-events:none}
+body.idle.panel-closed{cursor:none}
+#zoom{position:absolute;inset:0;z-index:5;background:rgba(0,0,0,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;cursor:zoom-out}
+#zoom img{width:1500px;max-width:90%;height:860px;object-fit:contain;filter:drop-shadow(0 10px 40px rgba(0,0,0,.9));animation:pop .5s cubic-bezier(.3,1.6,.5,1)}
+#zoom .zname{font-size:48px;font-weight:800;text-shadow:0 3px 6px #000}
+.slot.zoomable,.vs-img img{cursor:zoom-in}
+body:not(.display) #title{cursor:text}
+#waiting{position:absolute;inset:0;display:grid;place-items:center;font-size:40px;color:var(--muted)}
+
+/* ---------- control panel ---------- */
+#panel{position:fixed;right:0;top:0;bottom:0;width:340px;background:var(--panel);border-left:1px solid var(--border);overflow-y:auto;padding:14px 16px 24px;z-index:10;font-size:14px}
+#panel header{display:flex;justify-content:space-between;align-items:center;font-size:17px;margin-bottom:6px}
+#panel section{border-top:1px solid var(--border);padding:12px 0;display:flex;flex-direction:column;gap:8px}
+#panel label{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+#panel label.check{text-transform:none;letter-spacing:0;font-size:14px;color:#ddd;display:flex;gap:8px;align-items:center}
+.row{display:flex;gap:8px;align-items:center}
+.row>*{flex:1}
+input[type=text],input[type=number]{width:100%;background:#0d0d12;border:1px solid var(--border);color:#fff;border-radius:8px;padding:8px 10px}
+button{background:#262633;border:1px solid #35354a;color:#fff;border-radius:8px;padding:8px 10px;cursor:pointer}
+button:hover:not(:disabled){background:#30303f}
+button:disabled{opacity:.4;cursor:default}
+button.primary{background:#00b578;border-color:#00b578;font-weight:600}
+button.primary:hover:not(:disabled){background:#00c985}
+button.big{padding:14px;font-size:16px}
+button.danger{color:#ff8a8a}
+button.x{background:none;border:0;font-size:18px;padding:4px 8px}
+.muted{color:var(--muted)}
+.small{font-size:12px;margin:0}
+#chatStatus.ok{color:var(--accent)}
+#gear{position:fixed;right:12px;bottom:12px;z-index:9;opacity:.2;font-size:20px}
+#gear:hover{opacity:1}
+body.panel-closed #panel{display:none}
+body:not(.panel-closed) #gear{display:none}
+body.display #panel,body.display #gear,body.display #setup{display:none!important}
+
+/* ---------- setup ---------- */
+#setup{position:fixed;inset:0;right:340px;background:rgba(9,9,12,.97);z-index:8;overflow-y:auto;padding:40px 24px}
+body.panel-closed #setup{right:0}
+.setup-box{max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.setup-box h2{margin:0 0 6px;font-family:'Luckiest Guy',cursive;font-weight:400;font-size:40px;letter-spacing:2px}
+.setup-box label{color:var(--muted);font-size:13px}
+.drop{border:2px dashed #4a4a63;border-radius:14px;padding:36px;text-align:center;cursor:pointer;color:#ccc;font-size:16px}
+.drop.over,.drop:hover{border-color:var(--accent);color:#fff}
+#entryGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.ent{background:#14141b;border:1px solid var(--border);border-radius:10px;padding:8px;position:relative;display:flex;flex-direction:column;gap:6px}
+.ent img{width:100%;aspect-ratio:1;object-fit:contain}
+.ent input{padding:4px 6px!important;font-size:12px}
+.ent button{position:absolute;top:4px;right:4px;padding:0 7px;line-height:22px}
+.hidden{display:none!important}
+
+#confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:50}
+#confetti i{position:absolute;top:-20px;width:12px;height:18px;animation:fall linear forwards}
+@keyframes fall{to{transform:translate(var(--dx),110vh) rotate(var(--r))}}
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <h1 id="title"></h1>
+  <svg id="lines" width="1920" height="1080"></svg>
+  <div id="slots"></div>
+  <div id="poll" class="hidden">
+    <div class="poll-head"><span id="pollTitle"></span><span id="pollHint"></span></div>
+    <div class="opt" id="opt1"><div class="fill"></div><span class="num">1</span><img alt=""><span class="nm"></span><span class="pct"></span></div>
+    <div class="opt" id="opt2"><div class="fill"></div><span class="num">2</span><img alt=""><span class="nm"></span><span class="pct"></span></div>
+    <div class="timer"><i id="timerFill"></i></div>
+  </div>
+  <div id="side">
+    <div id="cam"><span>CAMERA</span></div>
+    <div id="vs">
+      <div class="vs-card" id="vs1"><div class="vs-img"></div><div class="vs-name"></div><div class="vs-pct hidden"></div></div>
+      <div id="vsText">VS</div>
+      <div class="vs-card" id="vs2"><div class="vs-img"></div><div class="vs-name"></div><div class="vs-pct hidden"></div></div>
+    </div>
+  </div>
+  <div id="zoom" class="hidden"><img alt=""><div class="zname"></div></div>
+  <div id="waiting" class="hidden">Waiting for a bracket…</div>
+</div>
+
+<button id="gear" title="Show controls (H)">⚙</button>
+
+<aside id="panel">
+  <header><b>Controls</b><button id="closePanel" title="Hide (H)">Hide controls ✕</button></header>
+  <section>
+    <label>Tournament title</label><input type="text" id="titleIn">
+    <p class="small muted">You can also double-click the title on screen to edit it.</p>
+  </section>
+  <section>
+    <label>Twitch channel (for chat votes)</label>
+    <div class="row"><input type="text" id="channel" placeholder="yourchannel"><button id="connectBtn" style="flex:0">Connect</button></div>
+    <div id="chatStatus" class="small muted">Not connected</div>
+    <p class="small muted">Viewers type <b>1</b>/<b>2</b> (or <b>top</b>/<b>bottom</b>) in chat. One vote per viewer, and their last vote counts.</p>
+  </section>
+  <section>
+    <div id="matchInfo" class="muted">No match in progress</div>
+    <button id="stepBtn" class="primary big">Reveal next match ▶</button>
+    <div class="row"><button id="pick1">Winner: 1</button><button id="pick2">Winner: 2</button></div>
+    <div class="row"><button id="undoBtn">↶ Undo</button><button id="cancelBtn">Cancel match</button></div>
+    <div class="row"><span class="small muted" style="flex:2">Test votes</span><button id="t1">+1</button><button id="t2">+2</button></div>
+    <p class="small muted">Tip: you can also click any <b>?</b> matchup in the bracket to play it next.</p>
+  </section>
+  <section>
+    <label>Vote time (seconds)</label><input type="number" id="duration" min="5" max="900">
+    <label class="check"><input type="checkbox" id="hideNames"> Hide names (use “Top” / “Bottom”)</label>
+    <label class="check"><input type="checkbox" id="sidePanel"> Camera + big VS panel on the right</label>
+  </section>
+  <section>
+    <button id="popout">Open stream window ↗</button>
+    <p class="small muted">Capture that window in OBS (Window Capture) and keep this tab for the controls. Or close this panel with <b>H</b> and capture this window.</p>
+  </section>
+  <section>
+    <button id="resetBracket">Reshuffle / edit entries</button>
+    <button id="wipe" class="danger">Delete everything</button>
+  </section>
+  <p class="small muted">Keys: <b>Space</b> next step · <b>1</b>/<b>2</b> pick winner · <b>H</b> hide panel · <b>U</b> undo</p>
+</aside>
+
+<div id="setup" class="hidden">
+  <div class="setup-box">
+    <h2>Create your bracket</h2>
+    <label>Tournament title</label>
+    <input type="text" id="setupTitle">
+    <label class="drop" id="drop"><input type="file" id="files" accept="image/*" multiple hidden>
+      <b>Drop images here</b> or click to choose. Add as many as you like (GIFs stay animated).</label>
+    <div id="entryInfo" class="muted"></div>
+    <div id="entryGrid"></div>
+    <div class="row"><button id="clearEntries">Remove all</button><button id="createBtn" class="primary big">Shuffle &amp; create bracket ▶</button></div>
+    <p class="small muted">Images are stored only in this browser. Nothing is uploaded anywhere.</p>
+  </div>
+</div>
+
+<div id="confetti"></div>
+<div id="toast" style="opacity:0"></div>
+
+<script>
+const DISPLAY = new URLSearchParams(location.search).has('display');
+const KEY = 'bracketmaker_state_v1', POSKEY = 'bracketmaker_pollpos';
+const W = 1920, H = 1080, PANEL_W = 340;
+const $ = id => document.getElementById(id);
+const BW = () => state.sidePanel ? 1400 : W; // width of the bracket area
+const uid = () => Math.random().toString(36).slice(2, 10);
+const bc = 'BroadcastChannel' in window ? new BroadcastChannel('bracketmaker') : null;
+
+/* ================= state ================= */
+function defaults() {
+  return { title: 'EMOTE TOURNAMENT 2026', channel: '', duration: 60, showNames: true, sidePanel: true,
+           entries: [], bracket: null, revealed: [], match: null, history: [] };
+}
+function loadState() {
+  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s) return Object.assign(defaults(), s); } catch (e) {}
+  return defaults();
+}
+let state = loadState();
+let saveTimer = null;
+function save(now = true) {
+  if (DISPLAY) return; // only the control window writes state
+  clearTimeout(saveTimer);
+  const f = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { console.warn(e); } };
+  now ? f() : (saveTimer = setTimeout(f, 250));
+}
+
+/* ================= image storage (IndexedDB) ================= */
+const urls = {};
+const dbp = new Promise((res, rej) => {
+  const r = indexedDB.open('bracketmaker', 1);
+  r.onupgradeneeded = () => r.result.createObjectStore('images');
+  r.onsuccess = () => res(r.result);
+  r.onerror = () => rej(r.error);
+});
+async function idb(mode, fn) {
+  const db = await dbp;
+  return new Promise((res, rej) => {
+    const tx = db.transaction('images', mode), req = fn(tx.objectStore('images'));
+    tx.oncomplete = () => res(req && req.result);
+    tx.onerror = () => rej(tx.error);
+  });
+}
+async function ensureUrls() {
+  for (const e of state.entries) {
+    if (urls[e.id]) continue;
+    try { const b = await idb('readonly', s => s.get(e.id)); if (b) urls[e.id] = URL.createObjectURL(b); } catch (err) {}
+  }
+  // drop entries whose image was lost (e.g. browser storage cleared), unless a bracket uses them
+  if (!DISPLAY && !state.bracket && state.entries.some(e => !urls[e.id])) {
+    state.entries = state.entries.filter(e => urls[e.id]); save();
+  }
+}
+const label = (id, side) => state.showNames ? nameOf(id) : side === 1 ? 'Top' : 'Bottom';
+const nameOf = id => (state.entries.find(e => e.id === id) || {}).name || '';
+
+/* ================= bracket logic ================= */
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function sizing(N) { const R = Math.max(1, Math.ceil(Math.log2(N))); return { R, Sz: 2 ** R, byes: 2 ** R - N }; }
+
+function createBracket() {
+  const ids = shuffle(state.entries.map(e => e.id)), N = ids.length;
+  if (N < 2) return;
+  const { R, Sz, byes } = sizing(N), M = Sz / 2;
+  const byeSet = new Set();
+  for (let t = 0; t < byes; t++) byeSet.add(Math.floor(t * M / byes));
+  const rounds = [];
+  for (let r = 0; r <= R; r++) rounds.push(Array(Sz >> r).fill(null));
+  let p = 0;
+  for (let k = 0; k < M; k++) {
+    if (byeSet.has(k)) { rounds[0][2 * k] = ids[p++]; rounds[0][2 * k + 1] = 'BYE'; rounds[1][k] = rounds[0][2 * k]; }
+    else { rounds[0][2 * k] = ids[p++]; rounds[0][2 * k + 1] = ids[p++]; }
+  }
+  state.bracket = { id: uid(), R, Sz, N, byes, rounds };
+  state.revealed = []; state.match = null; state.history = [];
+  save(); render();
+}
+function playable(r, k) {
+  const b = state.bracket, a = b.rounds[r][2 * k], c = b.rounds[r][2 * k + 1];
+  return a && c && a !== 'BYE' && c !== 'BYE' && !b.rounds[r + 1][k];
+}
+function nextPlayable() {
+  const b = state.bracket;
+  for (let r = 0; r < b.R; r++)
+    for (let k = 0; k < b.rounds[r].length / 2; k++) if (playable(r, k)) return { r, k };
+  return null;
+}
+function roundName(r) {
+  const R = state.bracket.R;
+  return r === R - 1 ? 'Final' : r === R - 2 ? 'Semifinal' : r === R - 3 ? 'Quarterfinal' : 'Round ' + (r + 1);
+}
+const pair = m => [state.bracket.rounds[m.r][2 * m.k], state.bracket.rounds[m.r][2 * m.k + 1]];
+const champion = () => state.bracket && state.bracket.rounds[state.bracket.R][0];
+
+function snap() {
+  state.history.push(JSON.stringify({ rounds: state.bracket.rounds, revealed: state.revealed, match: state.match }));
+  if (state.history.length > 80) state.history.shift();
+}
+function undo() {
+  if (DISPLAY) return send('undo');
+  const h = state.history.pop(); if (!h) return;
+  const o = JSON.parse(h);
+  state.bracket.rounds = o.rounds; state.revealed = o.revealed; state.match = o.match;
+  if (state.match && state.match.phase !== 'reveal') { state.match.phase = 'reveal'; state.match.votes = {}; }
+  save(); render();
+}
+function selectMatch(r, k) {
+  const m = state.match;
+  if (m && m.phase === 'voting') return;
+  if (m && m.r === r && m.k === k && m.phase !== 'done') return;
+  snap();
+  state.match = { r, k, phase: 'reveal', votes: {} };
+  for (const id of pair(state.match)) if (!state.revealed.includes(id)) state.revealed.push(id);
+  save(); render();
+}
+function startVote() {
+  const m = state.match; if (!m || m.phase !== 'reveal') return;
+  m.phase = 'voting'; m.votes = {}; m.endsAt = Date.now() + Math.max(5, +state.duration || 60) * 1000;
+  save(); render();
+}
+function counts(m) {
+  let a = 0, b = 0;
+  for (const v of Object.values(m.votes || {})) v === 1 ? a++ : b++;
+  return [a, b];
+}
+function endVote() {
+  const m = state.match; if (!m || m.phase !== 'voting') return;
+  const [a, b] = counts(m);
+  if (a === b) { m.phase = 'tie'; save(); render(); }
+  else declare(a > b ? 1 : 2);
+}
+function declare(side) {
+  if (DISPLAY) return send('pick' + side);
+  const m = state.match; if (!m || m.phase === 'done') return;
+  snap();
+  state.bracket.rounds[m.r + 1][m.k] = pair(m)[side - 1];
+  m.phase = 'done'; m.winner = side;
+  save(); render();
+}
+function step() {
+  if (DISPLAY) return send('step');
+  const m = state.match, b = state.bracket; if (!b) return;
+  if (!m || m.phase === 'done') { const n = nextPlayable(); if (n) selectMatch(n.r, n.k); }
+  else if (m.phase === 'reveal') startVote();
+  else if (m.phase === 'voting') endVote();
+}
+function addVote(user, side) {
+  const m = state.match;
+  if (!m || m.phase !== 'voting') return;
+  m.votes[user] = side;
+  save(false); renderPoll(); renderVS();
+}
+
+/* ================= Twitch chat (anonymous, read-only) ================= */
+let ws = null, chatChannel = '';
+function setChat(text, ok) { const el = $('chatStatus'); el.textContent = text; el.classList.toggle('ok', !!ok); }
+function connectChat() {
+  const ch = (state.channel || '').trim().toLowerCase().replace(/^#/, '');
+  if (ws) { ws.onclose = null; ws.close(); ws = null; }
+  chatChannel = ch;
+  if (!ch) return setChat('Not connected');
+  setChat('Connecting to #' + ch + '…');
+  const sock = ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
+  sock.onopen = () => {
+    sock.send('PASS SCHMOOPIIE');
+    sock.send('NICK justinfan' + Math.floor(10000 + Math.random() * 80000));
+    sock.send('JOIN #' + ch);
+  };
+  sock.onmessage = e => {
+    for (const line of e.data.split('\r\n')) {
+      if (!line) continue;
+      if (line.startsWith('PING')) { sock.send('PONG :tmi.twitch.tv'); continue; }
+      if (line.includes(' 366 ')) { setChat('● Listening to #' + ch + ' chat', true); continue; }
+      const m = line.match(/^:([^!]+)!\S+ PRIVMSG #\S+ :(.*)$/);
+      if (!m) continue;
+      const v = m[2].trim().toLowerCase().match(/^(?:!vote\s*)?(1|2|top|bottom)(?![\w])/);
+      if (v) addVote(m[1].toLowerCase(), v[1] === '1' || v[1] === 'top' ? 1 : 2);
+    }
+  };
+  sock.onclose = () => {
+    if (ws !== sock) return;
+    setChat('Disconnected, retrying…');
+    setTimeout(() => { if (ws === sock && chatChannel === ch) connectChat(); }, 3000);
+  };
+}
+
+/* ================= layout ================= */
+let geo = null, builtId = null, lastChamp;
+function geometry(b) {
+  const { R, Sz } = b, n0 = Sz / 2, cols = 2 * R + 1, x0 = 40, colW = (BW() - 80) / cols;
+  const top = 165, bottom = 1045, cap = Math.min(colW * .78, 210);
+  let size0 = cap, sp = 0;
+  if (n0 > 1) { sp = (bottom - top - size0) / (n0 - 1); size0 = Math.min(size0, sp * .88); sp = (bottom - top - size0) / (n0 - 1); }
+  const firstY = n0 > 1 ? top + size0 : 640;
+  const g = {};
+  for (let r = 0; r < R; r++) {
+    const n = Sz >> r, half = n / 2;
+    for (let i = 0; i < n; i++) {
+      const left = i < half, j = left ? i : i - half;
+      const y = n0 > 1 ? firstY + sp * ((2 ** r) * (j + .5) - .5) : firstY;
+      const c = left ? r : cols - 1 - r, x1 = x0 + c * colW;
+      const size = n0 > 1 ? Math.min(cap, sp * (2 ** r) * .88) : cap;
+      g[r + '-' + i] = { r, i, x1, x2: x1 + colW, cx: x1 + colW / 2, y, size, left, gap: n0 > 1 ? sp * (2 ** r) - size : 999 };
+    }
+  }
+  const fy = g[(R - 1) + '-0'].y, cx1 = x0 + R * colW;
+  g[R + '-0'] = { r: R, i: 0, x1: cx1, x2: cx1 + colW, cx: cx1 + colW / 2, y: fy, size: Math.min(colW * .95, 280), champ: true, gap: 999 };
+  return g;
+}
+function build() {
+  const b = state.bracket;
+  geo = geometry(b); builtId = b.id + state.sidePanel;
+  const wrap = $('slots'); wrap.innerHTML = '';
+  for (const g of Object.values(geo)) {
+    if (b.rounds[g.r][g.i] === 'BYE') continue;
+    const el = document.createElement('div');
+    el.className = 'slot' + (g.champ ? ' champ' : '');
+    el.style.cssText = `left:${g.cx}px;top:${g.y}px;width:${g.size}px;height:${g.size}px;--fs:${g.size * .55}px`;
+    el.innerHTML = '<div class="pic"></div><div class="cap"></div>';
+    g.font = Math.max(14, Math.min(g.champ ? 40 : 26, g.size * .16));
+    el.querySelector('.cap').style.fontSize = g.font + 'px';
+    el.onclick = e => onSlotClick(g.r, g.i, e);
+    wrap.appendChild(el); g.el = el;
+  }
+  // lines
+  let d = '';
+  const hl = (g) => `M${g.x1} ${g.y}H${g.x2}`;
+  for (let r = 0; r < b.R; r++) {
+    const n = b.Sz >> r;
+    for (let i = 0; i < n; i++) if (b.rounds[r][i] !== 'BYE') d += hl(geo[r + '-' + i]);
+    if (r === b.R - 1) continue;
+    for (let k = 0; k < n / 2; k++) {
+      const a = geo[r + '-' + 2 * k], c = geo[r + '-' + (2 * k + 1)], p = geo[(r + 1) + '-' + k];
+      const x = a.left ? a.x2 : a.x1, ys = [p.y];
+      if (b.rounds[r][2 * k] !== 'BYE') ys.push(a.y);
+      if (b.rounds[r][2 * k + 1] !== 'BYE') ys.push(c.y);
+      d += `M${x} ${Math.min(...ys)}V${Math.max(...ys)}`;
+    }
+  }
+  $('lines').innerHTML = `<path d="${d}"/><path class="gold" d="${hl(geo[b.R + '-0'])}"/>`;
+}
+function onSlotClick(r, i, e) {
+  const id = state.bracket.rounds[r][i];
+  if (id && state.revealed.includes(id)) return zoom(id);
+  if (DISPLAY || r >= state.bracket.R) return;
+  if (playable(r, i >> 1)) selectMatch(r, i >> 1);
+}
+
+/* ================= render ================= */
+function render() {
+  document.body.classList.toggle('display', DISPLAY);
+  document.body.classList.toggle('no-side', !state.sidePanel);
+  setTitle();
+  const b = state.bracket;
+  if (!DISPLAY) {
+    $('setup').classList.toggle('hidden', !!b);
+    if (!b) renderSetup();
+    renderPanel();
+  }
+  $('waiting').classList.toggle('hidden', !(DISPLAY && !b));
+  if (!b) { $('slots').innerHTML = ''; $('lines').innerHTML = ''; builtId = null; $('poll').classList.add('hidden'); renderVS(); return; }
+  if (builtId !== b.id + state.sidePanel) build();
+  updateSlots();
+  renderPoll();
+  renderVS();
+  renderZoom();
+  const ch = champion();
+  if (lastChamp !== undefined && ch && ch !== lastChamp) confetti();
+  lastChamp = ch || null;
+}
+function setTitle() {
+  const t = $('title'); t.textContent = state.title; t.style.width = BW() + 'px';
+  let fs = 80; t.style.fontSize = fs + 'px';
+  while (t.scrollWidth > t.clientWidth && fs > 30) t.style.fontSize = (fs -= 4) + 'px';
+}
+let vsKey = null;
+function renderVS() {
+  if (!state.sidePanel) return;
+  const b = state.bracket, m = state.match, ch = champion(), rev = new Set(state.revealed);
+  let ids = [null, null], mode = 'idle';
+  if (ch && (!m || m.phase === 'done')) { ids = [ch, null]; mode = 'champ'; }
+  else if (b && m) { ids = pair(m); mode = m.phase; }
+  const key = mode === 'champ' ? 'champ' : m && mode !== 'idle' ? m.r + '-' + m.k : 'idle';
+  const changed = key !== vsKey; vsKey = key;
+  $('vs').classList.toggle('champ', mode === 'champ');
+  $('vsText').textContent = mode === 'champ' ? '👑 CHAMPION' : 'VS';
+  $('vs2').classList.toggle('hidden', mode === 'champ');
+  const [c1, c2] = m ? counts(m) : [0, 0], tot = c1 + c2;
+  [1, 2].forEach(s => {
+    const card = $('vs' + s), id = ids[s - 1], img = card.querySelector('.vs-img');
+    const want = id && rev.has(id) ? urls[id] || '' : '?';
+    if (img.dataset.src !== want) {
+      img.dataset.src = want;
+      img.innerHTML = want === '?' ? '<div class="q">?</div>' : `<img src="${want}" alt="">`;
+    }
+    if (changed) { card.classList.remove('pop'); void card.offsetWidth; card.classList.add('pop'); }
+    card.querySelector('.vs-name').textContent = want === '?' ? '' : mode === 'champ' ? (state.showNames ? nameOf(id) : '') : label(id, s);
+    const pct = card.querySelector('.vs-pct');
+    const showPct = m && mode !== 'champ' && (mode === 'voting' || mode === 'done' || mode === 'tie');
+    pct.classList.toggle('hidden', !showPct);
+    pct.textContent = tot ? Math.round((s === 1 ? c1 : c2) / tot * 100) + '%' : '0%';
+    card.classList.toggle('win', mode === 'done' && m.winner === s);
+    card.classList.toggle('lose', mode === 'done' && m.winner !== s);
+  });
+}
+function zoom(id) {
+  if (DISPLAY) return send('zoom:' + (id || ''));
+  state.zoom = id || null; save(); renderZoom();
+}
+function renderZoom() {
+  const id = state.zoom, z = $('zoom');
+  z.classList.toggle('hidden', !id);
+  if (!id) return;
+  z.querySelector('img').src = urls[id] || '';
+  z.querySelector('.zname').textContent = state.showNames ? nameOf(id) : '';
+}
+function updateSlots() {
+  const b = state.bracket, m = state.match, rev = new Set(state.revealed);
+  const votingNow = m && m.phase === 'voting';
+  for (const g of Object.values(geo)) {
+    const el = g.el; if (!el) continue;
+    const id = b.rounds[g.r][g.i];
+    const shown = !id ? '' : rev.has(id) ? id : '?';
+    const pic = el.querySelector('.pic');
+    if (el.dataset.shown !== shown) {
+      const first = el.dataset.shown === undefined;
+      el.dataset.shown = shown;
+      pic.innerHTML = shown === '' ? (g.champ ? '<div class="trophy">🏆</div>' : '')
+        : shown === '?' ? `<div class="q" style="font-size:${g.size * .5}px">?</div>`
+        : `<img src="${urls[id] || ''}" alt="">`;
+      if (shown && !first) { el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+    }
+    let cap = '';
+    if (g.champ) cap = id && rev.has(id) && state.showNames ? '👑 ' + nameOf(id) : 'CHAMPION';
+    else if (shown && shown !== '?' && state.showNames && g.r < b.R - 1 && g.gap >= g.font + 22) cap = nameOf(id);
+    el.querySelector('.cap').textContent = cap;
+    const parent = g.r < b.R ? b.rounds[g.r + 1][g.i >> 1] : null;
+    el.classList.toggle('lost', !!(id && parent && parent !== id));
+    el.classList.toggle('active', !!(m && m.phase !== 'done' && m.r === g.r && m.k === (g.i >> 1)));
+    el.classList.toggle('won', !!(m && m.phase === 'done' && m.r + 1 === g.r && m.k === g.i));
+    el.classList.toggle('filled', !!id);
+    el.classList.toggle('zoomable', shown !== '' && shown !== '?');
+    el.classList.toggle('clickable', !DISPLAY && !votingNow && g.r < b.R && playable(g.r, g.i >> 1));
+  }
+}
+function renderPoll() {
+  const m = state.match, poll = $('poll');
+  if (!state.bracket || !m) return poll.classList.add('hidden');
+  poll.classList.remove('hidden');
+  const ids = pair(m), [c1, c2] = counts(m), tot = c1 + c2;
+  [[1, c1], [2, c2]].forEach(([s, c]) => {
+    const o = $('opt' + s), id = ids[s - 1], pct = tot ? Math.round(c / tot * 100) : 0;
+    o.querySelector('img').src = urls[id] || '';
+    o.querySelector('.nm').textContent = label(id, s);
+    o.querySelector('.fill').style.width = pct + '%';
+    o.querySelector('.pct').textContent = m.phase === 'reveal' ? '' : `${pct}% (${c})`;
+    o.classList.toggle('win', m.phase === 'done' && m.winner === s);
+    o.classList.toggle('lose', m.phase === 'done' && m.winner !== s);
+  });
+  $('pollTitle').textContent = roundName(m.r);
+  updateTimer();
+}
+function updateTimer() {
+  const m = state.match; if (!m || !state.bracket) return;
+  let hint = '', frac = 1;
+  if (m.phase === 'reveal') hint = 'Get ready to vote…';
+  else if (m.phase === 'voting') {
+    const left = Math.max(0, m.endsAt - Date.now());
+    frac = left / (Math.max(5, +state.duration || 60) * 1000);
+    hint = `Type 1 or 2 in chat! · ${Math.ceil(left / 1000)}s`;
+  } else if (m.phase === 'tie') { hint = "It's a tie! Streamer decides"; frac = 0; }
+  else {
+    frac = 0;
+    const w = label(pair(m)[m.winner - 1], m.winner);
+    hint = m.r === state.bracket.R - 1 ? (state.showNames ? `👑 ${w} is the CHAMPION!` : '👑 We have a champion!') : `${w} advances!`;
+  }
+  $('pollHint').textContent = hint;
+  $('timerFill').style.width = Math.min(1, frac) * 100 + '%';
+}
+function setVal(id, v) { const el = $(id); if (document.activeElement !== el) el.value = v; }
+function renderPanel() {
+  setVal('channel', state.channel); setVal('duration', state.duration); setVal('titleIn', state.title);
+  $('hideNames').checked = !state.showNames;
+  $('sidePanel').checked = state.sidePanel;
+  const b = state.bracket, m = state.match, ch = champion();
+  let label = 'Reveal next match ▶', dis = false, info = 'No match in progress';
+  if (!b) { label = 'Create a bracket first'; dis = true; info = ''; }
+  else if (ch) { label = '🏆 Tournament complete'; dis = true; info = 'Champion: ' + nameOf(ch); }
+  else {
+    const decided = b.rounds.slice(1).flat().filter(Boolean).length - b.byes;
+    info = `${b.N - 1 - decided} matches left`;
+    if (!m || m.phase === 'done') dis = !nextPlayable();
+    else {
+      const [a, c] = pair(m);
+      info = `${roundName(m.r)}: ${nameOf(a)} vs ${nameOf(c)}`;
+      if (m.phase === 'reveal') label = 'Start voting ▶';
+      else if (m.phase === 'voting') label = 'End voting now ■';
+      else { label = 'Tie! Pick a winner below'; dis = true; }
+    }
+  }
+  $('matchInfo').textContent = info;
+  $('stepBtn').textContent = label; $('stepBtn').disabled = dis;
+  const live = !!(m && m.phase !== 'done');
+  $('pick1').disabled = $('pick2').disabled = $('cancelBtn').disabled = !live;
+  $('pick1').textContent = live ? '1 wins: ' + nameOf(pair(m)[0]) : 'Winner: 1';
+  $('pick2').textContent = live ? '2 wins: ' + nameOf(pair(m)[1]) : 'Winner: 2';
+  $('t1').disabled = $('t2').disabled = !(m && m.phase === 'voting');
+  $('undoBtn').disabled = !state.history.length;
+}
+function renderSetup() {
+  setVal('setupTitle', state.title);
+  const N = state.entries.length;
+  if (N < 2) $('entryInfo').textContent = N ? '1 image, add at least one more.' : 'No images yet.';
+  else {
+    const { R, Sz, byes } = sizing(N);
+    $('entryInfo').textContent = `${N} entries → ${Sz}-slot bracket, ${R} rounds` + (byes ? `, ${byes} get a free pass (bye) in round 1` : '');
+  }
+  $('createBtn').disabled = N < 2;
+  const grid = $('entryGrid'); grid.innerHTML = '';
+  for (const e of state.entries) {
+    const d = document.createElement('div'); d.className = 'ent';
+    const img = document.createElement('img'); img.src = urls[e.id] || '';
+    const inp = document.createElement('input'); inp.type = 'text'; inp.value = e.name; inp.maxLength = 40;
+    inp.oninput = () => { e.name = inp.value; save(false); };
+    const x = document.createElement('button'); x.textContent = '×'; x.title = 'Remove';
+    x.onclick = async () => {
+      state.entries = state.entries.filter(z => z !== e);
+      await idb('readwrite', s => s.delete(e.id)).catch(() => {});
+      save(); renderSetup();
+    };
+    d.append(img, inp, x); grid.appendChild(d);
+  }
+}
+
+/* ================= poll dragging ================= */
+let scale = 1;
+function applyPollPos() {
+  let p; try { p = JSON.parse(localStorage.getItem(POSKEY)); } catch (e) {}
+  p = p || { x: (BW() - 960) / 2, y: H - 290 };
+  $('poll').style.left = p.x + 'px'; $('poll').style.top = p.y + 'px';
+}
+(() => {
+  const poll = $('poll'); let start = null;
+  poll.addEventListener('pointerdown', e => {
+    start = { mx: e.clientX, my: e.clientY, x: poll.offsetLeft, y: poll.offsetTop };
+    poll.setPointerCapture(e.pointerId); poll.classList.add('dragging');
+  });
+  poll.addEventListener('pointermove', e => {
+    if (!start) return;
+    const x = Math.round(Math.max(-700, Math.min(W - 260, start.x + (e.clientX - start.mx) / scale)));
+    const y = Math.round(Math.max(0, Math.min(H - 80, start.y + (e.clientY - start.my) / scale)));
+    poll.style.left = x + 'px'; poll.style.top = y + 'px';
+  });
+  poll.addEventListener('pointerup', () => {
+    if (!start) return; start = null; poll.classList.remove('dragging');
+    try { localStorage.setItem(POSKEY, JSON.stringify({ x: poll.offsetLeft, y: poll.offsetTop })); } catch (e) {}
+  });
+})();
+
+/* ================= misc ================= */
+function fit() {
+  const availW = innerWidth - (!DISPLAY && !document.body.classList.contains('panel-closed') ? PANEL_W : 0);
+  scale = Math.min(availW / W, innerHeight / H);
+  $('stage').style.transform = `translate(${(availW - W * scale) / 2}px,${(innerHeight - H * scale) / 2}px) scale(${scale})`;
+}
+function togglePanel() {
+  if (DISPLAY) return;
+  const closed = document.body.classList.toggle('panel-closed'); fit();
+  if (closed) toast('Controls hidden. Press H, or move the mouse to the bottom-right corner, to show them again.');
+}
+let toastT;
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.style.opacity = 1; clearTimeout(toastT); toastT = setTimeout(() => (t.style.opacity = 0), 3500); }
+let idleT;
+function wake() { document.body.classList.remove('idle'); clearTimeout(idleT); idleT = setTimeout(() => document.body.classList.add('idle'), 2000); }
+addEventListener('mousemove', wake); wake();
+function confetti() {
+  const c = $('confetti');
+  for (let i = 0; i < 180; i++) {
+    const p = document.createElement('i');
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.background = `hsl(${Math.random() * 360} 90% 60%)`;
+    p.style.animationDelay = Math.random() * 1 + 's';
+    p.style.animationDuration = 2.5 + Math.random() * 2.5 + 's';
+    p.style.setProperty('--dx', (Math.random() * 300 - 150) + 'px');
+    p.style.setProperty('--r', Math.random() * 900 + 'deg');
+    c.appendChild(p);
+  }
+  setTimeout(() => (c.innerHTML = ''), 7000);
+}
+function send(cmd) { bc && bc.postMessage({ cmd }); }
+
+/* ================= wiring ================= */
+document.addEventListener('click', e => { const b = e.target.closest('button'); if (b) b.blur(); });
+document.addEventListener('keydown', e => {
+  if (/INPUT|TEXTAREA/.test(e.target.tagName)) return;
+  const k = e.key.toLowerCase();
+  if (k === ' ') { e.preventDefault(); step(); }
+  else if (k === '1' || k === '2') declare(+k);
+  else if (k === 'h') togglePanel();
+  else if (k === 'u') undo();
+  else if (k === 'escape') zoom(null);
+});
+addEventListener('resize', fit);
+$('zoom').onclick = () => zoom(null);
+[1, 2].forEach(n => $('vs' + n).querySelector('.vs-img').onclick = e => {
+  if (e.target.tagName !== 'IMG') return;
+  const m = state.match, ch = champion();
+  zoom(ch && (!m || m.phase === 'done') ? ch : m && pair(m)[n - 1]);
+});
+addEventListener('storage', async e => {
+  if (e.key === POSKEY) applyPollPos();
+  if (e.key === KEY && DISPLAY) { state = loadState(); await ensureUrls(); render(); }
+});
+if (bc && !DISPLAY) bc.onmessage = e => {
+  const c = e.data && e.data.cmd;
+  if (c === 'step') step(); else if (c === 'pick1') declare(1); else if (c === 'pick2') declare(2); else if (c === 'undo') undo();
+  else if (c && c.startsWith('zoom:')) zoom(c.slice(5));
+};
+setInterval(() => {
+  const m = state.match;
+  if (!DISPLAY && m && m.phase === 'voting' && Date.now() >= m.endsAt) endVote();
+  if (m && m.phase === 'voting') updateTimer();
+}, 200);
+
+if (!DISPLAY) {
+  $('gear').onclick = $('closePanel').onclick = togglePanel;
+  $('stepBtn').onclick = step;
+  $('pick1').onclick = () => declare(1);
+  $('pick2').onclick = () => declare(2);
+  $('undoBtn').onclick = undo;
+  $('cancelBtn').onclick = () => { if (state.match && state.match.phase !== 'done') { state.match = null; save(); render(); } };
+  $('t1').onclick = () => addVote('test_' + uid(), 1);
+  $('t2').onclick = () => addVote('test_' + uid(), 2);
+  $('connectBtn').onclick = () => { state.channel = $('channel').value.trim(); save(); connectChat(); };
+  $('channel').onkeydown = e => { if (e.key === 'Enter') $('connectBtn').click(); };
+  $('duration').onchange = () => { state.duration = Math.max(5, Math.min(900, +$('duration').value || 60)); save(); };
+  $('titleIn').oninput = () => { state.title = $('titleIn').value; save(false); setTitle(); };
+  $('title').ondblclick = () => {
+    const t = prompt('Tournament title', state.title);
+    if (t !== null) { state.title = t.trim() || state.title; save(); render(); }
+  };
+  $('setupTitle').oninput = () => { state.title = $('setupTitle').value; save(false); setTitle(); };
+  $('sidePanel').onchange = () => { state.sidePanel = $('sidePanel').checked; save(); render(); };
+  $('hideNames').onchange = () => { state.showNames = !$('hideNames').checked; save(); render(); };
+  $('popout').onclick = () => window.open(location.pathname + '?display', 'bracket_display', 'width=1280,height=720');
+  $('resetBracket').onclick = () => {
+    if (state.bracket && !confirm('Reset the bracket? All results are lost, but your images are kept.')) return;
+    state.bracket = null; state.match = null; state.zoom = null; state.revealed = []; state.history = []; save(); render();
+  };
+  $('wipe').onclick = async () => {
+    if (!confirm('Delete all images and the bracket?')) return;
+    await idb('readwrite', s => s.clear()).catch(() => {});
+    const channel = state.channel; state = defaults(); state.channel = channel; save(); render();
+  };
+  $('clearEntries').onclick = async () => {
+    if (!state.entries.length || !confirm('Remove all images?')) return;
+    await idb('readwrite', s => s.clear()).catch(() => {});
+    state.entries = []; save(); renderSetup();
+  };
+  $('createBtn').onclick = createBracket;
+  const addFiles = async files => {
+    for (const f of files) {
+      if (!f.type.startsWith('image/')) continue;
+      const id = uid();
+      await idb('readwrite', s => s.put(f, id));
+      urls[id] = URL.createObjectURL(f);
+      state.entries.push({ id, name: f.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim().slice(0, 40) });
+    }
+    save(); renderSetup();
+  };
+  $('files').onchange = e => { addFiles([...e.target.files]); e.target.value = ''; };
+  const drop = $('drop');
+  drop.ondragover = e => { e.preventDefault(); drop.classList.add('over'); };
+  drop.ondragleave = () => drop.classList.remove('over');
+  drop.ondrop = e => { e.preventDefault(); drop.classList.remove('over'); addFiles([...e.dataTransfer.files]); };
+}
+
+(async () => {
+  applyPollPos(); fit();
+  document.fonts && document.fonts.ready.then(setTitle);
+  await ensureUrls();
+  render();
+  if (!DISPLAY && state.channel) connectChat();
+})();
+</script>
+</body>
+</html>
