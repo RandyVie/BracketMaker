@@ -7,13 +7,20 @@ There is no server or database, and no Twitch login is needed.
 
 ## Tutorials
 
-### 1. Put it online (one time, free)
-**GitHub Pages**
+### 1. Get it running
+**Easiest: no hosting needed**
+1. On this GitHub page, click the green **Code** button → **Download ZIP**, and unzip it anywhere.
+2. Double-click **`index.html`**. It opens in your browser and works right away, including Twitch chat.
+
+> Use **Chrome** or **Edge** for this. Always open the same `index.html` file, because your images and bracket are saved per browser and per file location. If you move the folder, start a new tournament.
+
+**Optional: put it online** (free), so you can use it from a link instead of a file:
+*GitHub Pages*
 1. In this repo, go to **Settings → Pages**.
 2. Under *Source*, choose **Deploy from a branch** → `main` → `/ (root)` → **Save**.
 3. After about a minute your tool is live at `https://<your-username>.github.io/BracketMaker/`.
 
-**Or Cloudflare Pages:** Workers & Pages → Create → Pages → *Connect to Git* → pick this repo. Leave the build command empty, set the output directory to `/`, and deploy.
+*Or Cloudflare Pages:* Workers & Pages → Create → Pages → *Connect to Git* → pick this repo. Leave the build command empty, set the output directory to `/`, and deploy.
 
 ### 2. Create your first tournament
 1. Open your site.
@@ -73,4 +80,3 @@ The winner moves to the next round automatically. Repeat until the 👑 champion
 ### Good to know
 - Images are stored **only in the browser you uploaded them in**. Set up the tournament on the PC you stream from.
 - If the number of entries isn't a power of 2 (e.g. 11), some entries get a free pass (bye) in round 1.
-- Run it locally without hosting: `python3 -m http.server` in this folder, then open `http://localhost:8000`.
