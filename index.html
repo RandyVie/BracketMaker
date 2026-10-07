@@ -13,7 +13,7 @@
 html,body{margin:0;height:100%;background:var(--bg);color:#fff;font-family:Rubik,system-ui,sans-serif;overflow:hidden}
 button,input{font:inherit}
 
-/* ---------- stage (fixed 1920x1080, scaled to fit) ---------- */
+/* stage (fixed 1920x1080, scaled to fit) */
 #stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0}
 #title{position:absolute;top:22px;left:0;width:1920px;white-space:nowrap;padding:0 30px;box-sizing:border-box;margin:0;text-align:center;font-family:'Luckiest Guy',cursive;font-weight:400;font-size:80px;letter-spacing:4px;text-shadow:0 5px 0 #000,0 0 40px rgba(255,255,255,.15)}
 #lines{position:absolute;inset:0}
@@ -37,7 +37,7 @@ button,input{font:inherit}
 @keyframes pulse{50%{transform:scale(1.07)}}
 @keyframes pop{0%{transform:scale(.2) rotate(-12deg);opacity:0}100%{transform:none;opacity:1}}
 
-/* ---------- poll ---------- */
+/* poll */
 #poll{position:absolute;width:960px;background:rgba(38,38,46,.94);border-radius:16px;padding:16px 22px 18px;box-shadow:0 10px 40px rgba(0,0,0,.6);cursor:grab;user-select:none}
 #poll.dragging{cursor:grabbing}
 .poll-head{display:flex;justify-content:space-between;align-items:baseline;gap:20px;font-size:28px;font-weight:800}
@@ -53,7 +53,7 @@ button,input{font:inherit}
 .opt.lose{opacity:.45}
 .timer{height:8px;background:rgba(255,255,255,.15);border-radius:4px;overflow:hidden;margin-top:14px}
 #timerFill{display:block;height:100%;width:100%;background:#fff;transition:width .2s linear}
-/* ---------- side panel: camera + VS ---------- */
+/* side panel: camera + VS */
 #side{position:absolute;left:1400px;top:0;width:520px;height:1080px;border-left:3px solid #2c2c3a}
 #cam{position:absolute;left:14px;top:14px;width:492px;height:277px;border:2px solid #2c2c3a;border-radius:6px;display:grid;place-items:center;color:#2c2c3a;font-weight:800;letter-spacing:.2em}
 body.display #cam span{visibility:hidden}
@@ -82,7 +82,7 @@ body.idle.panel-closed{cursor:none}
 body:not(.display) #title{cursor:text}
 #waiting{position:absolute;inset:0;display:grid;place-items:center;font-size:40px;color:var(--muted)}
 
-/* ---------- control panel ---------- */
+/* control panel */
 #panel{position:fixed;right:0;top:0;bottom:0;width:340px;background:var(--panel);border-left:1px solid var(--border);overflow-y:auto;padding:14px 16px 24px;z-index:10;font-size:14px}
 #panel header{display:flex;justify-content:space-between;align-items:center;font-size:17px;margin-bottom:6px}
 #panel section{border-top:1px solid var(--border);padding:12px 0;display:flex;flex-direction:column;gap:8px}
@@ -108,7 +108,7 @@ body.panel-closed #panel{display:none}
 body:not(.panel-closed) #gear{display:none}
 body.display #panel,body.display #gear,body.display #setup{display:none!important}
 
-/* ---------- setup ---------- */
+/* setup */
 #setup{position:fixed;inset:0;right:340px;background:rgba(9,9,12,.97);z-index:8;overflow-y:auto;padding:40px 24px}
 body.panel-closed #setup{right:0}
 .setup-box{max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
@@ -216,7 +216,7 @@ const BW = () => state.sidePanel ? 1400 : W; // width of the bracket area
 const uid = () => Math.random().toString(36).slice(2, 10);
 const bc = 'BroadcastChannel' in window ? new BroadcastChannel('bracketmaker') : null;
 
-/* ================= state ================= */
+// State
 function defaults() {
   return { title: 'EMOTE TOURNAMENT 2026', channel: '', duration: 60, showNames: true, sidePanel: true,
            entries: [], bracket: null, revealed: [], match: null, history: [] };
@@ -234,7 +234,7 @@ function save(now = true) {
   now ? f() : (saveTimer = setTimeout(f, 250));
 }
 
-/* ================= image storage (IndexedDB) ================= */
+// Image storage (IndexedDB)
 const urls = {};
 const dbp = new Promise((res, rej) => {
   const r = indexedDB.open('bracketmaker', 1);
@@ -263,7 +263,7 @@ async function ensureUrls() {
 const label = (id, side) => state.showNames ? nameOf(id) : side === 1 ? 'Top' : 'Bottom';
 const nameOf = id => (state.entries.find(e => e.id === id) || {}).name || '';
 
-/* ================= bracket logic ================= */
+// Bracket logic
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 function sizing(N) { const R = Math.max(1, Math.ceil(Math.log2(N))); return { R, Sz: 2 ** R, byes: 2 ** R - N }; }
 
@@ -360,7 +360,7 @@ function addVote(user, side) {
   save(false); renderPoll(); renderVS();
 }
 
-/* ================= Twitch chat (anonymous, read-only) ================= */
+// Twitch chat (anonymous, read-only)
 let ws = null, chatChannel = '';
 function setChat(text, ok) { const el = $('chatStatus'); el.textContent = text; el.classList.toggle('ok', !!ok); }
 function connectChat() {
@@ -393,7 +393,7 @@ function connectChat() {
   };
 }
 
-/* ================= layout ================= */
+// Layout
 let geo = null, builtId = null, lastChamp;
 function geometry(b) {
   const { R, Sz } = b, n0 = Sz / 2, cols = 2 * R + 1, x0 = 40, colW = (BW() - 80) / cols;
@@ -455,7 +455,7 @@ function onSlotClick(r, i, e) {
   if (playable(r, i >> 1)) selectMatch(r, i >> 1);
 }
 
-/* ================= render ================= */
+// Render
 function render() {
   document.body.classList.toggle('display', DISPLAY);
   document.body.classList.toggle('no-side', !state.sidePanel);
@@ -641,7 +641,7 @@ function renderSetup() {
   }
 }
 
-/* ================= poll dragging ================= */
+// Poll dragging
 let scale = 1;
 function applyPollPos() {
   let p; try { p = JSON.parse(localStorage.getItem(POSKEY)); } catch (e) {}
@@ -666,7 +666,7 @@ function applyPollPos() {
   });
 })();
 
-/* ================= misc ================= */
+// Misc
 function fit() {
   const availW = innerWidth - (!DISPLAY && !document.body.classList.contains('panel-closed') ? PANEL_W : 0);
   scale = Math.min(availW / W, innerHeight / H);
@@ -698,7 +698,7 @@ function confetti() {
 }
 function send(cmd) { bc && bc.postMessage({ cmd }); }
 
-/* ================= wiring ================= */
+// Wiring
 document.addEventListener('click', e => { const b = e.target.closest('button'); if (b) b.blur(); });
 document.addEventListener('keydown', e => {
   if (/INPUT|TEXTAREA/.test(e.target.tagName)) return;
