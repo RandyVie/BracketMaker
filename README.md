@@ -8,23 +8,14 @@ There is no server or database, and no Twitch login is needed.
 ## Tutorials
 
 ### 1. Get it running
-**Easiest: no hosting needed**
+No installing or hosting needed:
 1. On this GitHub page, click the green **Code** button → **Download ZIP**, and unzip it anywhere.
 2. Double-click **`index.html`**. It opens in your browser and works right away, including Twitch chat.
 
 > Use **Chrome** or **Edge** for this. Always open the same `index.html` file, because your images and bracket are saved per browser and per file location. If you move the folder, start a new tournament.
 
-**Optional: put it online** (free), so you can use it from a link instead of a file:
-
-*GitHub Pages*
-1. In this repo, go to **Settings → Pages**.
-2. Under *Source*, choose **Deploy from a branch** → `main` → `/ (root)` → **Save**.
-3. After about a minute your tool is live at `https://<your-username>.github.io/BracketMaker/`.
-
-*Or Cloudflare Pages:* Workers & Pages → Create → Pages → *Connect to Git* → pick this repo. Leave the build command empty, set the output directory to `/`, and deploy.
-
 ### 2. Create your first tournament
-1. Open `index.html` (or your site, if you put it online).
+1. Double-click `index.html`.
 2. Type a **title**, for example *Spooky Emote Tournament 2026*.
 3. **Drag your images** into the drop zone. Any number works, and GIFs stay animated.
 4. Optionally rename entries. The names come from the file names.
