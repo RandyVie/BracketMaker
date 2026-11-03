@@ -21,10 +21,20 @@ No installing or hosting needed:
 4. Optionally rename entries. The names come from the file names.
 5. Click **Shuffle & create bracket**. Every entry is now a hidden **?**.
 
-### 3. Connect Twitch chat
-1. In the controls, type your **channel name** (e.g. `kylabosman`) and click **Connect**.
+### 3. Choose how viewers vote
+Under **How viewers vote** in the controls, pick one:
+
+**Type 1 / 2 in chat** (works for every channel, no login)
+1. Type your **channel name** (e.g. `kylabosman`) and click **Connect**.
 2. When it says **● Listening to #yourchannel chat**, you're done.
 3. Viewers vote by typing **1** or **2** (or **top** / **bottom**) in chat. Each viewer gets one vote, and if they vote again only their last vote counts.
+
+**Twitch poll** (Affiliate / Partner only)
+1. Click **Log in with Twitch**. A code appears and twitch.tv/activate opens.
+2. Enter the code on Twitch and approve. The controls now say **● Logged in as yourname**.
+3. Every vote now starts a real Twitch poll. Viewers vote in the poll, and the results show up in the bracket live.
+
+> Twitch polls need a one-time setup in `index.html`. See [Setting up Twitch polls](#setting-up-twitch-polls) below.
 
 ### 4. Set up OBS
 1. Click **Open stream window ↗**. A clean window with no controls opens.
@@ -35,10 +45,15 @@ No installing or hosting needed:
 > Only one screen? Press **H** to hide the controls and capture the main window instead. The controls button disappears when the mouse is still.
 
 ### 5. Run a match
-Press **Space** three times:
-1. **Reveal** the next matchup. The two images appear big in the VS panel.
-2. **Start voting.** The poll and timer start.
-3. **End voting** early (optional). Otherwise it ends when the timer runs out.
+Use the big green button at the top of the controls, or press **Space**:
+1. **Reveal next match.** The two images appear in the VS panel.
+2. **START VOTE.** The button glows orange when a vote is waiting to start. The poll and timer start.
+3. **End voting now** (optional). Otherwise it ends when the timer runs out.
+
+When the controls are hidden, the same button floats in the bottom-right corner while you move the mouse.
+Tick **Start the vote automatically after revealing a match** if you'd rather start each vote 3 seconds after the reveal.
+
+**Show both big:** press **B** (or the button under START VOTE) to show both entries side by side, as large as possible, with live percentages. Press **B** again, or click it, to go back to the bracket. Tick **Show both big during every vote** to make this automatic.
 
 The winner moves to the next round automatically. Repeat until the 👑 champion gets confetti.
 
@@ -55,6 +70,7 @@ The winner moves to the next round automatically. Repeat until the 👑 champion
 | Key | Action |
 |---|---|
 | `Space` | Next step: reveal match → start vote → end vote |
+| `B` | Show both entries big / back to the bracket |
 | `1` / `2` | Pick the winner manually (also for ties) |
 | `U` | Undo |
 | `H` | Show/hide the control panel |
@@ -72,3 +88,21 @@ The winner moves to the next round automatically. Repeat until the 👑 champion
 ### Good to know
 - Images are stored **only in the browser you uploaded them in**. Set up the tournament on the PC you stream from.
 - If the number of entries isn't a power of 2 (e.g. 11), some entries get a free pass (bye) in round 1.
+
+### Setting up Twitch polls
+Twitch only lets registered apps create polls, so this needs to be done once by whoever shares the tool:
+1. Go to [dev.twitch.tv/console/apps](https://dev.twitch.tv/console/apps) and click **Register Your Application**.
+2. Fill in:
+   - **Name:** anything unique, e.g. `BracketMaker-yourname`
+   - **OAuth Redirect URLs:** `http://localhost` (required by the form, but not used)
+   - **Category:** Broadcaster Suite
+   - **Client Type:** **Public**
+3. Click **Create**, then **Manage**, and copy the **Client ID**.
+4. Open `index.html` in a text editor, find `const TWITCH_CLIENT_ID = '';` and paste it between the quotes.
+
+The Client ID is not a password, so it's fine to share it or put it on GitHub. Nobody can use it to get into a Twitch account: every streamer still logs in and approves on Twitch.
+
+Good to know about Twitch polls:
+- Choice names can be at most 25 characters, so long names are shortened. With **Hide names** they're simply "Top" / "Bottom".
+- A poll runs between 15 seconds and 30 minutes, so shorter vote times are raised to 15 seconds.
+- Canceling or undoing a running vote also removes the poll from Twitch.

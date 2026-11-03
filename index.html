@@ -73,13 +73,30 @@ body.display #cam span{visibility:hidden}
 .vs-card.pop .vs-img{animation:pop .6s cubic-bezier(.3,1.6,.5,1)}
 body.no-side #side{display:none}
 #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#000c;border:1px solid #444;padding:10px 16px;border-radius:10px;z-index:20;transition:opacity .4s;pointer-events:none}
-body.idle #gear{opacity:0!important;pointer-events:none}
+body.idle #mini{opacity:0!important;pointer-events:none}
 body.idle.panel-closed{cursor:none}
 #zoom{position:absolute;inset:0;z-index:5;background:rgba(0,0,0,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;cursor:zoom-out}
 #zoom img{width:1500px;max-width:90%;height:860px;object-fit:contain;filter:drop-shadow(0 10px 40px rgba(0,0,0,.9));animation:pop .5s cubic-bezier(.3,1.6,.5,1)}
 #zoom .zname{font-size:48px;font-weight:800;text-shadow:0 3px 6px #000}
 .slot.zoomable,.vs-img img{cursor:zoom-in}
 body:not(.display) #title{cursor:text}
+/* big VS view: both entries side by side */
+#duo{position:absolute;left:0;top:0;height:1080px;z-index:4;background:var(--bg);display:flex;flex-direction:column;padding:28px 40px 32px;cursor:pointer}
+.duo-head{text-align:center;font-family:'Luckiest Guy',cursive;font-size:60px;letter-spacing:3px;text-shadow:0 5px 0 #000}
+.duo-row{flex:1;min-height:0;display:flex;align-items:center;gap:10px;margin:10px 0}
+.duo-card{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;align-items:center;gap:14px}
+.duo-img{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center}
+.duo-img img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 8px 24px rgba(0,0,0,.9))}
+.duo-name{font-size:44px;font-weight:800;text-shadow:0 3px 5px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.duo-bar{position:relative;width:100%;height:60px;background:rgba(255,255,255,.1);border-radius:12px;overflow:hidden}
+.duo-bar i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--accent);transition:width .5s}
+.duo-bar span{position:relative;display:flex;height:100%;align-items:center;justify-content:center;font-size:32px;font-weight:800;text-shadow:0 2px 3px rgba(0,0,0,.6)}
+.duo-vs{font-family:'Luckiest Guy',cursive;font-size:150px;color:var(--gold);-webkit-text-stroke:6px #000;paint-order:stroke fill;text-shadow:0 8px 0 #000;transform:rotate(-6deg);flex:0 0 auto}
+.duo-card.win .duo-img img{filter:drop-shadow(0 0 40px var(--gold))}
+.duo-card.lose .duo-img{filter:grayscale(1) brightness(.4)}
+.duo-card.pop .duo-img{animation:pop .6s cubic-bezier(.3,1.6,.5,1)}
+.duo-foot{text-align:center;font-size:30px;font-weight:600;color:#ddd}
+.duo-foot .timer{margin-top:12px;height:10px}
 #waiting{position:absolute;inset:0;display:grid;place-items:center;font-size:40px;color:var(--muted)}
 
 /* control panel */
@@ -90,6 +107,7 @@ body:not(.display) #title{cursor:text}
 #panel label.check{text-transform:none;letter-spacing:0;font-size:14px;color:#ddd;display:flex;gap:8px;align-items:center}
 .row{display:flex;gap:8px;align-items:center}
 .row>*{flex:1}
+.col{display:flex;flex-direction:column;gap:8px}
 input[type=text],input[type=number]{width:100%;background:#0d0d12;border:1px solid var(--border);color:#fff;border-radius:8px;padding:8px 10px}
 button{background:#262633;border:1px solid #35354a;color:#fff;border-radius:8px;padding:8px 10px;cursor:pointer}
 button:hover:not(:disabled){background:#30303f}
@@ -102,11 +120,21 @@ button.x{background:none;border:0;font-size:18px;padding:4px 8px}
 .muted{color:var(--muted)}
 .small{font-size:12px;margin:0}
 #chatStatus.ok{color:var(--accent)}
-#gear{position:fixed;right:12px;bottom:12px;z-index:9;opacity:.2;font-size:20px}
-#gear:hover{opacity:1}
+#mini{position:fixed;right:12px;bottom:12px;z-index:9;display:flex;gap:8px;opacity:.35;transition:opacity .3s}
+#mini:hover{opacity:1}
+#mini button{font-size:15px}
 body.panel-closed #panel{display:none}
-body:not(.panel-closed) #gear{display:none}
-body.display #panel,body.display #gear,body.display #setup{display:none!important}
+body:not(.panel-closed) #mini{display:none}
+body.display #panel,body.display #mini,body.display #setup{display:none!important}
+#stepBtn small,#miniStep small{opacity:.7;font-weight:400;margin-left:6px}
+button.attention{background:#ff9f1a;border-color:#ff9f1a;color:#000;font-weight:800;animation:glow 1.2s ease-in-out infinite}
+button.attention:hover:not(:disabled){background:#ffb347}
+@keyframes glow{50%{box-shadow:0 0 0 6px rgba(255,159,26,.35)}}
+#twCode{background:#0d0d12;border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center}
+#twCode b{display:block;font-size:26px;letter-spacing:.15em;margin:6px 0;color:#fff}
+#twCode a{color:#bf94ff}
+#twStatus.ok{color:var(--accent)}
+#twStatus.err{color:#ff8a8a}
 
 /* setup */
 #setup{position:fixed;inset:0;right:340px;background:rgba(9,9,12,.97);z-index:8;overflow-y:auto;padding:40px 24px}
@@ -148,34 +176,57 @@ body.panel-closed #setup{right:0}
       <div class="vs-card" id="vs2"><div class="vs-img"></div><div class="vs-name"></div><div class="vs-pct hidden"></div></div>
     </div>
   </div>
+  <div id="duo" class="hidden">
+    <div class="duo-head" id="duoTitle"></div>
+    <div class="duo-row">
+      <div class="duo-card" id="duo1"><div class="duo-img"></div><div class="duo-name"></div><div class="duo-bar"><i></i><span></span></div></div>
+      <div class="duo-vs">VS</div>
+      <div class="duo-card" id="duo2"><div class="duo-img"></div><div class="duo-name"></div><div class="duo-bar"><i></i><span></span></div></div>
+    </div>
+    <div class="duo-foot"><span id="duoHint"></span><div class="timer"><i id="duoTimer"></i></div></div>
+  </div>
   <div id="zoom" class="hidden"><img alt=""><div class="zname"></div></div>
   <div id="waiting" class="hidden">Waiting for a bracket…</div>
 </div>
 
-<button id="gear" title="Show controls (H)">⚙</button>
+<div id="mini"><button id="miniStep" class="primary"></button><button id="gear" title="Show controls (H)">⚙ Controls</button></div>
 
 <aside id="panel">
   <header><b>Controls</b><button id="closePanel" title="Hide (H)">Hide controls ✕</button></header>
   <section>
-    <label>Tournament title</label><input type="text" id="titleIn">
-    <p class="small muted">You can also double-click the title on screen to edit it.</p>
-  </section>
-  <section>
-    <label>Twitch channel (for chat votes)</label>
-    <div class="row"><input type="text" id="channel" placeholder="yourchannel"><button id="connectBtn" style="flex:0">Connect</button></div>
-    <div id="chatStatus" class="small muted">Not connected</div>
-    <p class="small muted">Viewers type <b>1</b>/<b>2</b> (or <b>top</b>/<b>bottom</b>) in chat. One vote per viewer, and their last vote counts.</p>
-  </section>
-  <section>
     <div id="matchInfo" class="muted">No match in progress</div>
     <button id="stepBtn" class="primary big">Reveal next match ▶</button>
+    <button id="duoBtn">Show both big <small class="muted">(B)</small></button>
     <div class="row"><button id="pick1">Winner: 1</button><button id="pick2">Winner: 2</button></div>
     <div class="row"><button id="undoBtn">↶ Undo</button><button id="cancelBtn">Cancel match</button></div>
     <div class="row"><span class="small muted" style="flex:2">Test votes</span><button id="t1">+1</button><button id="t2">+2</button></div>
     <p class="small muted">Tip: you can also click any <b>?</b> matchup in the bracket to play it next.</p>
   </section>
   <section>
+    <label>How viewers vote</label>
+    <label class="check"><input type="radio" name="voteMode" value="chat"> Type 1 / 2 in chat</label>
+    <label class="check"><input type="radio" name="voteMode" value="poll"> Twitch poll (Affiliate / Partner)</label>
+    <div id="chatBox" class="col">
+      <label>Twitch channel</label>
+      <div class="row"><input type="text" id="channel" placeholder="yourchannel"><button id="connectBtn" style="flex:0">Connect</button></div>
+      <div id="chatStatus" class="small muted">Not connected</div>
+      <p class="small muted">Viewers type <b>1</b>/<b>2</b> (or <b>top</b>/<b>bottom</b>) in chat. One vote per viewer, and their last vote counts.</p>
+    </div>
+    <div id="pollBox" class="col">
+      <div id="twStatus" class="small muted"></div>
+      <div id="twCode" class="hidden">Go to <a id="twLink" target="_blank" rel="noopener">twitch.tv/activate</a> and enter<b id="twUserCode"></b><span class="small muted">Waiting for you to approve…</span></div>
+      <div class="row"><button id="twLogin">Log in with Twitch</button><button id="twLogout">Log out</button></div>
+      <p class="small muted">Starting a vote creates a real Twitch poll. Viewers vote in the poll, and the results show up here live.</p>
+    </div>
+  </section>
+  <section>
+    <label>Tournament title</label><input type="text" id="titleIn">
+    <p class="small muted">You can also double-click the title on screen to edit it.</p>
+  </section>
+  <section>
     <label>Vote time (seconds)</label><input type="number" id="duration" min="5" max="900">
+    <label class="check"><input type="checkbox" id="autoStart"> Start the vote automatically after revealing a match</label>
+    <label class="check"><input type="checkbox" id="duoAuto"> Show both big during every vote</label>
     <label class="check"><input type="checkbox" id="hideNames"> Hide names (use “Top” / “Bottom”)</label>
     <label class="check"><input type="checkbox" id="sidePanel"> Camera + big VS panel on the right</label>
   </section>
@@ -187,7 +238,7 @@ body.panel-closed #setup{right:0}
     <button id="resetBracket">Reshuffle / edit entries</button>
     <button id="wipe" class="danger">Delete everything</button>
   </section>
-  <p class="small muted">Keys: <b>Space</b> next step · <b>1</b>/<b>2</b> pick winner · <b>H</b> hide panel · <b>U</b> undo</p>
+  <p class="small muted">Keys: <b>Space</b> next step · <b>B</b> both big · <b>1</b>/<b>2</b> pick winner · <b>H</b> hide panel · <b>U</b> undo</p>
 </aside>
 
 <div id="setup" class="hidden">
@@ -213,12 +264,14 @@ const KEY = 'bracketmaker_state_v1', POSKEY = 'bracketmaker_pollpos';
 const W = 1920, H = 1080, PANEL_W = 340;
 const $ = id => document.getElementById(id);
 const BW = () => state.sidePanel ? 1400 : W; // width of the bracket area
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 const uid = () => Math.random().toString(36).slice(2, 10);
 const bc = 'BroadcastChannel' in window ? new BroadcastChannel('bracketmaker') : null;
 
 // State
 function defaults() {
   return { title: 'EMOTE TOURNAMENT 2026', channel: '', duration: 60, showNames: true, sidePanel: true,
+           voteMode: 'chat', autoStart: false, duo: false, duoAuto: false,
            entries: [], bracket: null, revealed: [], match: null, history: [] };
 }
 function loadState() {
@@ -308,9 +361,10 @@ function snap() {
 function undo() {
   if (DISPLAY) return send('undo');
   const h = state.history.pop(); if (!h) return;
+  dropPoll(state.match);
   const o = JSON.parse(h);
   state.bracket.rounds = o.rounds; state.revealed = o.revealed; state.match = o.match;
-  if (state.match && state.match.phase !== 'reveal') { state.match.phase = 'reveal'; state.match.votes = {}; }
+  if (state.match && state.match.phase !== 'reveal') resetMatch(state.match);
   save(); render();
 }
 function selectMatch(r, k) {
@@ -319,21 +373,45 @@ function selectMatch(r, k) {
   if (m && m.r === r && m.k === k && m.phase !== 'done') return;
   snap();
   state.match = { r, k, phase: 'reveal', votes: {} };
+  if (state.autoStart) state.match.autoAt = Date.now() + 3000;
   for (const id of pair(state.match)) if (!state.revealed.includes(id)) state.revealed.push(id);
   save(); render();
 }
-function startVote() {
-  const m = state.match; if (!m || m.phase !== 'reveal') return;
-  m.phase = 'voting'; m.votes = {}; m.endsAt = Date.now() + Math.max(5, +state.duration || 60) * 1000;
+function resetMatch(m) {
+  m.phase = 'reveal'; m.votes = {};
+  for (const k of ['pollId', 'pollCounts', 'pollClosed', 'source', 'endsAt', 'autoAt', 'starting', 'ending']) delete m[k];
+}
+async function startVote() {
+  const m = state.match; if (!m || m.phase !== 'reveal' || m.starting) return;
+  delete m.autoAt;
+  let dur = Math.max(5, +state.duration || 60);
+  if (state.voteMode === 'poll') {
+    if (!TWITCH_CLIENT_ID || !tw) { toast('Log in with Twitch first (Controls → How viewers vote), or switch to chat voting.'); renderPanel(); return; }
+    dur = Math.max(15, Math.min(1800, dur));
+    m.starting = true; renderPanel();
+    try { m.pollId = await createPoll(m, dur); }
+    catch (e) { delete m.starting; toast('Could not start the Twitch poll: ' + e.message); renderPanel(); return; }
+    delete m.starting;
+    if (state.match !== m || m.phase !== 'reveal') return dropPoll({ ...m, source: 'poll', phase: 'voting' });
+    m.source = 'poll'; m.pollCounts = [0, 0];
+  } else m.source = 'chat';
+  m.phase = 'voting'; m.votes = {}; m.dur = dur; m.endsAt = Date.now() + dur * 1000;
   save(); render();
 }
 function counts(m) {
-  let a = 0, b = 0;
+  let [a, b] = m.pollCounts || [0, 0];
   for (const v of Object.values(m.votes || {})) v === 1 ? a++ : b++;
   return [a, b];
 }
-function endVote() {
-  const m = state.match; if (!m || m.phase !== 'voting') return;
+async function endVote() {
+  const m = state.match; if (!m || m.phase !== 'voting' || m.ending) return;
+  if (m.source === 'poll') {
+    m.ending = true;
+    await endPoll(m, 'TERMINATED');
+    await fetchPoll(m).catch(() => {});
+    delete m.ending;
+    if (state.match !== m || m.phase !== 'voting') return;
+  }
   const [a, b] = counts(m);
   if (a === b) { m.phase = 'tie'; save(); render(); }
   else declare(a > b ? 1 : 2);
@@ -341,6 +419,7 @@ function endVote() {
 function declare(side) {
   if (DISPLAY) return send('pick' + side);
   const m = state.match; if (!m || m.phase === 'done') return;
+  if (m.phase === 'voting' && m.source === 'poll') endPoll(m, 'TERMINATED');
   snap();
   state.bracket.rounds[m.r + 1][m.k] = pair(m)[side - 1];
   m.phase = 'done'; m.winner = side;
@@ -356,8 +435,9 @@ function step() {
 function addVote(user, side) {
   const m = state.match;
   if (!m || m.phase !== 'voting') return;
+  if (m.source === 'poll' && !user.startsWith('test_')) return; // chat votes don't count during a Twitch poll
   m.votes[user] = side;
-  save(false); renderPoll(); renderVS();
+  save(false); renderPoll(); renderVS(); renderDuo();
 }
 
 // Twitch chat (anonymous, read-only)
@@ -391,6 +471,127 @@ function connectChat() {
     setChat('Disconnected, retrying…');
     setTimeout(() => { if (ws === sock && chatChannel === ch) connectChat(); }, 3000);
   };
+}
+
+// Twitch polls
+// To enable Twitch polls, register an app at https://dev.twitch.tv/console/apps
+// (Client Type: Public) and paste its Client ID here. See README.
+const TWITCH_CLIENT_ID = '';
+const TWKEY = 'bracketmaker_twitch', SCOPES = 'channel:manage:polls';
+let tw = (() => { try { return JSON.parse(localStorage.getItem(TWKEY)); } catch (e) { return null; } })();
+let twFlow = null, twError = '';
+function saveTw() { try { tw ? localStorage.setItem(TWKEY, JSON.stringify(tw)) : localStorage.removeItem(TWKEY); } catch (e) {} }
+
+async function idPost(path, params) {
+  const r = await fetch('https://id.twitch.tv/oauth2/' + path, { method: 'POST', body: new URLSearchParams({ client_id: TWITCH_CLIENT_ID, ...params }) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.message || 'HTTP ' + r.status);
+  return j;
+}
+async function setToken(t) {
+  const prev = tw;
+  tw = { ...(tw || {}), access: t.access_token, refresh: t.refresh_token || (tw && tw.refresh), expires: Date.now() + (t.expires_in || 3600) * 1000 };
+  if (!tw.userId) {
+    try {
+      const u = await helix('GET', 'users', null, false);
+      tw.userId = u.data[0].id; tw.login = u.data[0].login;
+    } catch (e) { tw = prev; throw e; }
+  }
+  saveTw();
+}
+async function refreshToken() {
+  await setToken(await idPost('token', { grant_type: 'refresh_token', refresh_token: tw.refresh }));
+}
+async function helix(method, path, body, retry = true) {
+  if (!tw) throw new Error('not logged in to Twitch');
+  if (retry && tw.refresh && Date.now() > tw.expires - 60000) await refreshToken().catch(() => {});
+  const r = await fetch('https://api.twitch.tv/helix/' + path, {
+    method,
+    headers: { Authorization: 'Bearer ' + tw.access, 'Client-Id': TWITCH_CLIENT_ID, ...(body ? { 'Content-Type': 'application/json' } : {}) },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (r.status === 401 && retry && tw.refresh) {
+    try { await refreshToken(); } catch (e) { twLogout(); throw new Error('Twitch login expired, please log in again'); }
+    return helix(method, path, body, false);
+  }
+  const j = r.status === 204 ? {} : await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.message || 'Twitch error ' + r.status);
+  return j;
+}
+async function twLogin() {
+  const flow = twFlow = {}; twError = '';
+  try {
+    const d = await idPost('device', { scopes: SCOPES });
+    flow.code = d.user_code; flow.uri = d.verification_uri; renderTw();
+    window.open(d.verification_uri, '_blank');
+    const until = Date.now() + d.expires_in * 1000;
+    let wait = (d.interval || 5) * 1000;
+    while (twFlow === flow && Date.now() < until) {
+      await sleep(wait);
+      if (twFlow !== flow) return;
+      try {
+        await setToken(await idPost('token', { scopes: SCOPES, device_code: d.device_code, grant_type: 'urn:ietf:params:oauth:grant-type:device_code' }));
+        twFlow = null; renderTw(); toast('Logged in to Twitch as ' + tw.login);
+        return;
+      } catch (e) {
+        if (e.message === 'authorization_pending') continue;
+        if (e.message === 'slow_down') { wait += 5000; continue; }
+        throw e;
+      }
+    }
+    if (twFlow === flow) throw new Error('the code expired, please try again');
+  } catch (e) {
+    if (twFlow === flow) { twFlow = null; twError = 'Login failed: ' + e.message; renderTw(); }
+  }
+}
+function twLogout() {
+  if (tw && tw.access) idPost('revoke', { token: tw.access }).catch(() => {});
+  tw = null; twFlow = null; saveTw(); renderTw();
+}
+function pollChoices(m) {
+  const ids = pair(m);
+  let c = [1, 2].map(s => label(ids[s - 1], s).trim().slice(0, 25) || (s === 1 ? 'Top' : 'Bottom'));
+  if (c[0].toLowerCase() === c[1].toLowerCase()) c = ['Top', 'Bottom'];
+  return c;
+}
+async function createPoll(m, dur) {
+  const j = await helix('POST', 'polls', {
+    broadcaster_id: tw.userId,
+    title: (roundName(m.r) + ': who wins?').slice(0, 60),
+    choices: pollChoices(m).map(title => ({ title })),
+    duration: dur,
+  });
+  return j.data[0].id;
+}
+async function fetchPoll(m) {
+  const j = await helix('GET', `polls?broadcaster_id=${tw.userId}&id=${m.pollId}`);
+  const p = j.data && j.data[0];
+  if (!p || state.match !== m) return;
+  m.pollCounts = p.choices.map(c => c.votes || 0);
+  save(false); renderPoll(); renderVS(); renderDuo();
+}
+function endPoll(m, status) {
+  if (!tw || !m || !m.pollId || m.pollClosed) return Promise.resolve();
+  m.pollClosed = true;
+  return helix('PATCH', 'polls', { broadcaster_id: tw.userId, id: m.pollId, status }).catch(() => {});
+}
+// Hide an unfinished poll from Twitch (cancel / undo)
+function dropPoll(m) {
+  if (m && m.source === 'poll' && m.phase === 'voting') endPoll(m, 'ARCHIVED');
+}
+function renderTw() {
+  if (DISPLAY) return;
+  const st = $('twStatus');
+  st.className = 'small';
+  $('twCode').classList.toggle('hidden', !(twFlow && twFlow.code));
+  if (twFlow && twFlow.code) { $('twUserCode').textContent = twFlow.code; $('twLink').href = twFlow.uri; }
+  $('twLogin').classList.toggle('hidden', !!tw);
+  $('twLogout').classList.toggle('hidden', !tw);
+  $('twLogin').disabled = !TWITCH_CLIENT_ID || !!twFlow;
+  if (!TWITCH_CLIENT_ID) { st.textContent = 'Twitch polls are not set up yet: a Twitch Client ID needs to be added to index.html (see README).'; st.classList.add('err'); }
+  else if (tw) { st.textContent = '● Logged in as ' + tw.login; st.classList.add('ok'); }
+  else if (twError) { st.textContent = twError; st.classList.add('err'); }
+  else { st.textContent = 'Not logged in'; st.classList.add('muted'); }
 }
 
 // Layout
@@ -467,11 +668,12 @@ function render() {
     renderPanel();
   }
   $('waiting').classList.toggle('hidden', !(DISPLAY && !b));
-  if (!b) { $('slots').innerHTML = ''; $('lines').innerHTML = ''; builtId = null; $('poll').classList.add('hidden'); renderVS(); return; }
+  if (!b) { $('slots').innerHTML = ''; $('lines').innerHTML = ''; builtId = null; $('poll').classList.add('hidden'); renderVS(); renderDuo(); return; }
   if (builtId !== b.id + state.sidePanel) build();
   updateSlots();
   renderPoll();
   renderVS();
+  renderDuo();
   renderZoom();
   const ch = champion();
   if (lastChamp !== undefined && ch && ch !== lastChamp) confetti();
@@ -511,6 +713,40 @@ function renderVS() {
     card.classList.toggle('win', mode === 'done' && m.winner === s);
     card.classList.toggle('lose', mode === 'done' && m.winner !== s);
   });
+}
+function duoVisible() {
+  const m = state.match;
+  return !!(state.bracket && m && (state.duo || (state.duoAuto && m.phase !== 'done' && !m.duoHidden)));
+}
+function toggleDuo() {
+  if (DISPLAY) return send('duo');
+  const m = state.match;
+  if (duoVisible()) { state.duo = false; if (m) m.duoHidden = true; }
+  else { state.duo = true; if (m) m.duoHidden = false; }
+  save(); render();
+}
+let duoKey = null;
+function renderDuo() {
+  const d = $('duo'), show = duoVisible();
+  d.classList.toggle('hidden', !show);
+  if (!show) { duoKey = null; return; }
+  d.style.width = BW() + 'px';
+  const m = state.match, ids = pair(m), [c1, c2] = counts(m), tot = c1 + c2;
+  const key = m.r + '-' + m.k, changed = key !== duoKey; duoKey = key;
+  $('duoTitle').textContent = roundName(m.r);
+  [1, 2].forEach(s => {
+    const card = $('duo' + s), id = ids[s - 1], img = card.querySelector('.duo-img'), c = s === 1 ? c1 : c2;
+    const want = urls[id] || '';
+    if (img.dataset.src !== want) { img.dataset.src = want; img.innerHTML = `<img src="${want}" alt="">`; }
+    if (changed) { card.classList.remove('pop'); void card.offsetWidth; card.classList.add('pop'); }
+    card.querySelector('.duo-name').textContent = label(id, s);
+    const pct = tot ? Math.round(c / tot * 100) : 0;
+    card.querySelector('.duo-bar i').style.width = pct + '%';
+    card.querySelector('.duo-bar span').textContent = m.phase === 'reveal' ? (s === 1 ? '1 · Top' : '2 · Bottom') : `${pct}% (${c})`;
+    card.classList.toggle('win', m.phase === 'done' && m.winner === s);
+    card.classList.toggle('lose', m.phase === 'done' && m.winner !== s);
+  });
+  updateTimer();
 }
 function zoom(id) {
   if (DISPLAY) return send('zoom:' + (id || ''));
@@ -554,7 +790,7 @@ function updateSlots() {
 }
 function renderPoll() {
   const m = state.match, poll = $('poll');
-  if (!state.bracket || !m) return poll.classList.add('hidden');
+  if (!state.bracket || !m || duoVisible()) return poll.classList.add('hidden');
   poll.classList.remove('hidden');
   const ids = pair(m), [c1, c2] = counts(m), tot = c1 + c2;
   [[1, c1], [2, c2]].forEach(([s, c]) => {
@@ -572,25 +808,31 @@ function renderPoll() {
 function updateTimer() {
   const m = state.match; if (!m || !state.bracket) return;
   let hint = '', frac = 1;
-  if (m.phase === 'reveal') hint = 'Get ready to vote…';
+  if (m.phase === 'reveal') hint = m.autoAt ? `Voting starts in ${Math.max(1, Math.ceil((m.autoAt - Date.now()) / 1000))}s…` : 'Get ready to vote…';
   else if (m.phase === 'voting') {
     const left = Math.max(0, m.endsAt - Date.now());
-    frac = left / (Math.max(5, +state.duration || 60) * 1000);
-    hint = `Type 1 or 2 in chat! · ${Math.ceil(left / 1000)}s`;
+    frac = left / ((m.dur || Math.max(5, +state.duration || 60)) * 1000);
+    hint = (m.source === 'poll' ? 'Vote in the Twitch poll!' : 'Type 1 or 2 in chat!') + ` · ${Math.ceil(left / 1000)}s`;
   } else if (m.phase === 'tie') { hint = "It's a tie! Streamer decides"; frac = 0; }
   else {
     frac = 0;
     const w = label(pair(m)[m.winner - 1], m.winner);
     hint = m.r === state.bracket.R - 1 ? (state.showNames ? `👑 ${w} is the CHAMPION!` : '👑 We have a champion!') : `${w} advances!`;
   }
-  $('pollHint').textContent = hint;
-  $('timerFill').style.width = Math.min(1, frac) * 100 + '%';
+  $('pollHint').textContent = $('duoHint').textContent = hint;
+  $('timerFill').style.width = $('duoTimer').style.width = Math.min(1, frac) * 100 + '%';
 }
 function setVal(id, v) { const el = $(id); if (document.activeElement !== el) el.value = v; }
 function renderPanel() {
   setVal('channel', state.channel); setVal('duration', state.duration); setVal('titleIn', state.title);
   $('hideNames').checked = !state.showNames;
   $('sidePanel').checked = state.sidePanel;
+  $('autoStart').checked = state.autoStart;
+  $('duoAuto').checked = state.duoAuto;
+  document.querySelectorAll('input[name=voteMode]').forEach(r => (r.checked = r.value === state.voteMode));
+  $('chatBox').classList.toggle('hidden', state.voteMode !== 'chat');
+  $('pollBox').classList.toggle('hidden', state.voteMode !== 'poll');
+  renderTw();
   const b = state.bracket, m = state.match, ch = champion();
   let label = 'Reveal next match ▶', dis = false, info = 'No match in progress';
   if (!b) { label = 'Create a bracket first'; dis = true; info = ''; }
@@ -602,18 +844,28 @@ function renderPanel() {
     else {
       const [a, c] = pair(m);
       info = `${roundName(m.r)}: ${nameOf(a)} vs ${nameOf(c)}`;
-      if (m.phase === 'reveal') label = 'Start voting ▶';
+      if (m.starting) { label = 'Starting Twitch poll…'; dis = true; }
+      else if (m.phase === 'reveal') label = 'START VOTE ▶';
       else if (m.phase === 'voting') label = 'End voting now ■';
       else { label = 'Tie! Pick a winner below'; dis = true; }
     }
   }
+  const attention = !!(m && m.phase === 'reveal' && !m.starting);
   $('matchInfo').textContent = info;
-  $('stepBtn').textContent = label; $('stepBtn').disabled = dis;
+  for (const id of ['stepBtn', 'miniStep']) {
+    const btn = $(id);
+    btn.textContent = label; btn.disabled = dis;
+    if (!dis) btn.insertAdjacentHTML('beforeend', '<small>Space</small>');
+    btn.classList.toggle('attention', attention);
+  }
+  $('duoBtn').disabled = !(b && m);
+  $('duoBtn').innerHTML = (duoVisible() ? 'Back to the bracket' : 'Show both big') + ' <small class="muted">(B)</small>';
   const live = !!(m && m.phase !== 'done');
   $('pick1').disabled = $('pick2').disabled = $('cancelBtn').disabled = !live;
   $('pick1').textContent = live ? '1 wins: ' + nameOf(pair(m)[0]) : 'Winner: 1';
   $('pick2').textContent = live ? '2 wins: ' + nameOf(pair(m)[1]) : 'Winner: 2';
   $('t1').disabled = $('t2').disabled = !(m && m.phase === 'voting');
+  $('cancelBtn').disabled = !live || !!m.starting;
   $('undoBtn').disabled = !state.history.length;
 }
 function renderSetup() {
@@ -707,10 +959,12 @@ document.addEventListener('keydown', e => {
   else if (k === '1' || k === '2') declare(+k);
   else if (k === 'h') togglePanel();
   else if (k === 'u') undo();
+  else if (k === 'b') toggleDuo();
   else if (k === 'escape') zoom(null);
 });
 addEventListener('resize', fit);
 $('zoom').onclick = () => zoom(null);
+$('duo').onclick = toggleDuo;
 [1, 2].forEach(n => $('vs' + n).querySelector('.vs-img').onclick = e => {
   if (e.target.tagName !== 'IMG') return;
   const m = state.match, ch = champion();
@@ -723,21 +977,33 @@ addEventListener('storage', async e => {
 if (bc && !DISPLAY) bc.onmessage = e => {
   const c = e.data && e.data.cmd;
   if (c === 'step') step(); else if (c === 'pick1') declare(1); else if (c === 'pick2') declare(2); else if (c === 'undo') undo();
+  else if (c === 'duo') toggleDuo();
   else if (c && c.startsWith('zoom:')) zoom(c.slice(5));
 };
 setInterval(() => {
   const m = state.match;
+  if (!DISPLAY && m && m.phase === 'reveal' && m.autoAt && Date.now() >= m.autoAt) startVote();
   if (!DISPLAY && m && m.phase === 'voting' && Date.now() >= m.endsAt) endVote();
-  if (m && m.phase === 'voting') updateTimer();
+  if (m && (m.phase === 'voting' || m.autoAt)) updateTimer();
 }, 200);
+setInterval(() => {
+  const m = state.match;
+  if (!DISPLAY && tw && m && m.phase === 'voting' && m.source === 'poll' && !m.ending) fetchPoll(m).catch(() => {});
+}, 2000);
 
 if (!DISPLAY) {
   $('gear').onclick = $('closePanel').onclick = togglePanel;
-  $('stepBtn').onclick = step;
+  $('stepBtn').onclick = $('miniStep').onclick = step;
+  $('duoBtn').onclick = toggleDuo;
+  $('twLogin').onclick = twLogin;
+  $('twLogout').onclick = twLogout;
+  document.querySelectorAll('input[name=voteMode]').forEach(r => (r.onchange = () => { state.voteMode = r.value; save(); renderPanel(); }));
+  $('autoStart').onchange = () => { state.autoStart = $('autoStart').checked; save(); };
+  $('duoAuto').onchange = () => { state.duoAuto = $('duoAuto').checked; save(); render(); };
   $('pick1').onclick = () => declare(1);
   $('pick2').onclick = () => declare(2);
   $('undoBtn').onclick = undo;
-  $('cancelBtn').onclick = () => { if (state.match && state.match.phase !== 'done') { state.match = null; save(); render(); } };
+  $('cancelBtn').onclick = () => { if (state.match && state.match.phase !== 'done') { dropPoll(state.match); state.match = null; save(); render(); } };
   $('t1').onclick = () => addVote('test_' + uid(), 1);
   $('t2').onclick = () => addVote('test_' + uid(), 2);
   $('connectBtn').onclick = () => { state.channel = $('channel').value.trim(); save(); connectChat(); };
@@ -785,6 +1051,7 @@ if (!DISPLAY) {
 }
 
 (async () => {
+  if (state.match) { delete state.match.starting; delete state.match.ending; }
   applyPollPos(); fit();
   document.fonts && document.fonts.ready.then(setTitle);
   await ensureUrls();
