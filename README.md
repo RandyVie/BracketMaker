@@ -34,7 +34,7 @@ Under **How viewers vote** in the controls, pick one:
 2. Enter the code on Twitch and approve. The controls now say **● Logged in as yourname**.
 3. Every vote now starts a real Twitch poll. Viewers vote in the poll, and the results show up in the bracket live.
 
-> Twitch polls need a one-time setup in `index.html`. See [Setting up Twitch polls](#setting-up-twitch-polls) below.
+> There's nothing to set up: just log in. The tool remembers the login, so you only need to do this again once in a while. Use **Log out** to disconnect.
 
 ### 4. Set up OBS
 1. Click **Open stream window ↗**. A clean window with no controls opens.
@@ -89,20 +89,20 @@ The winner moves to the next round automatically. Repeat until the 👑 champion
 - Images are stored **only in the browser you uploaded them in**. Set up the tournament on the PC you stream from.
 - If the number of entries isn't a power of 2 (e.g. 11), some entries get a free pass (bye) in round 1.
 
-### Setting up Twitch polls
-Twitch only lets registered apps create polls, so this needs to be done once by whoever shares the tool:
-1. Go to [dev.twitch.tv/console/apps](https://dev.twitch.tv/console/apps) and click **Register Your Application**.
-2. Fill in:
-   - **Name:** anything unique, e.g. `BracketMaker-yourname`
-   - **OAuth Redirect URLs:** `http://localhost` (required by the form, but not used)
-   - **Category:** Broadcaster Suite
-   - **Client Type:** **Public**
-3. Click **Create**, then **Manage**, and copy the **Client ID**.
-4. Open `index.html` in a text editor, find `const TWITCH_CLIENT_ID = '';` and paste it between the quotes.
-
-The Client ID is not a password, so it's fine to share it or put it on GitHub. Nobody can use it to get into a Twitch account: every streamer still logs in and approves on Twitch.
-
-Good to know about Twitch polls:
+### Twitch polls
+- Only **Affiliate** and **Partner** channels can run polls. Other channels can use chat voting.
 - Choice names can be at most 25 characters, so long names are shortened. With **Hide names** they're simply "Top" / "Bottom".
 - A poll runs between 15 seconds and 30 minutes, so shorter vote times are raised to 15 seconds.
-- Canceling or undoing a running vote also removes the poll from Twitch.
+- Ending a vote early also ends the Twitch poll. Canceling or undoing a running vote removes the poll from Twitch.
+
+<details>
+<summary>Using your own Twitch app (only if you copy this project)</summary>
+
+The tool already includes a registered Twitch app, so normally you don't need this. If you publish your own copy and want to use your own app:
+1. Go to [dev.twitch.tv/console/apps](https://dev.twitch.tv/console/apps) and click **Register Your Application**. Your Twitch account needs two-factor authentication turned on.
+2. Fill in: **Name** anything unique, **OAuth Redirect URLs** `http://localhost`, **Category** Broadcaster Suite, **Client Type** **Public**.
+3. Click **Create**, then **Manage**, and copy the **Client ID**.
+4. In `index.html`, replace the value of `const TWITCH_CLIENT_ID` with your Client ID.
+
+The Client ID is not a password. Nobody can use it to get into a Twitch account: every streamer still logs in and approves on Twitch.
+</details>
